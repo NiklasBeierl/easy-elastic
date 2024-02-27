@@ -1,0 +1,27 @@
+filebeat.inputs:
+  # https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-container.html
+  - type: container
+    format: docker
+    paths:
+      - "/var/lib/docker/containers/*/*json.log*"
+    processors:
+      # https://www.elastic.co/guide/en/beats/filebeat/current/add-docker-metadata.html
+      - add_docker_metadata: ~
+    index: container-logs
+
+setup.ilm.enabled: false
+setup.template:
+  enabled: true
+  overwrite: true
+  name: container-logs
+  pattern: container-logs*
+  settings.index:
+    number_of_replicas: 0
+    data_stream: {}
+
+output.elasticsearch:
+  hosts: ${ELASTIC_HOST}
+  username: ${ELASTIC_USERNAME}
+  password: ${ELASTIC_PASSWORD}
+  non_indexable_policy.dead_letter_index:
+    index: "bad-container-logs"

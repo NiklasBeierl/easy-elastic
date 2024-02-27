@@ -1,0 +1,19 @@
+services:
+  metricbeat:
+    image: docker.elastic.co/beats/metricbeat:${STACK_VERSION}
+    # Hostname is included in the log output
+    hostname: ${HOST_NAME}
+    environment:
+      ELASTIC_HOST: ${ELASTIC_HOST}
+      ELASTIC_USERNAME: elastic
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+    # Running as root is needed to get access to certain metrics
+    user: root
+    volumes:
+      - ./config/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/hostfs:ro
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: unless-stopped

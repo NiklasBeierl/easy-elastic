@@ -1,0 +1,16 @@
+services:
+  filebeat-experiments:
+    image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
+    # Hostname is included in the log output
+    hostname: ${HOST_NAME}
+    environment:
+      ELASTIC_HOST: ${ELASTIC_HOST}
+      ELASTIC_USERNAME: elastic
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+    volumes:
+      - ./config/filebeat-experiments.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ${LOG_DIR}:/var/logs/my-experiment
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: unless-stopped

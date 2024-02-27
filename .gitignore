@@ -1,0 +1,5 @@
+docker/.env
+.idea/
+docker/volumes/
+logs/
+!logs/.gitkeep

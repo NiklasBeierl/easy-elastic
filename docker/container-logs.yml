@@ -1,0 +1,22 @@
+services:
+  filebeat-containers:
+    image: docker.elastic.co/beats/filebeat:${STACK_VERSION}
+    # Hostname is included in the log output
+    hostname: ${HOST_NAME}
+    environment:
+      ELASTIC_HOST: ${ELASTIC_HOST}
+      ELASTIC_USERNAME: elastic
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD}
+    # Running as root is necessary because docker sets 710 permissions on everything in
+    # /var/lib/docker/containers, so filebeat won't see the logfiles if it's not root
+    user: root
+    volumes:
+      - ./config/filebeat-container.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Reading the container logs from the same path as on the host FS would be nicer here, but the
+      # add-container-metadata processor fails if the log files are not in "/var/lib/docker/containers"
+      - ${DOCKER_DIR}/containers:/var/lib/docker/containers:ro
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    restart: unless-stopped
